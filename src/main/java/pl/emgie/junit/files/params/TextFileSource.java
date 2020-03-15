@@ -1,4 +1,5 @@
-package pl.emgie.junit.files.param;
+package pl.emgie.junit.files.params;
+
 
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -8,8 +9,8 @@ import java.lang.annotation.*;
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ArgumentsSource(FileArgumentProvider.class)
-public @interface FileSource {
+@ArgumentsSource(TextArgumentProvider.class)
+public @interface TextFileSource {
 
     @NotNull String[] resources();
 }

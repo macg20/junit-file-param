@@ -1,45 +1,44 @@
-package pl.emgie.junit.files.param;
+package pl.emgie.junit.files.params;
 
-import com.google.common.io.ByteStreams;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.support.AnnotationConsumer;
 import org.junit.platform.commons.util.Preconditions;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.io.ObjectInputStream;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-public class FileArgumentProvider implements AnnotationConsumer<FileSource>, ArgumentsProvider {
+public class ObjectArgumentProvider<T> implements AnnotationConsumer<ObjectFileSource>, ArgumentsProvider {
 
     private final BiFunction<Class<?>, String, InputStream> inputStreamProvider;
 
     private String[] resources;
+    private Class<T> targetType;
 
-    FileArgumentProvider() {
+    ObjectArgumentProvider() {
         this(Class::getResourceAsStream);
     }
 
-    FileArgumentProvider(BiFunction<Class<?>, String, InputStream> inputStreamProvider) {
+    ObjectArgumentProvider(BiFunction<Class<?>, String, InputStream> inputStreamProvider) {
         this.inputStreamProvider = inputStreamProvider;
-    }
-
-
-    @Override
-    public void accept(FileSource fileSource) {
-        resources = fileSource.resources();
     }
 
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
-        return Arrays.stream(resources).map(e ->
-                openInputStream(extensionContext, e))
-                .map(this::mapToByteArray)
+        return Stream.of(resources)
+                .map(e -> openInputStream(extensionContext, e))
+                .map(this::mapToTargetType)
                 .map(Arguments::of);
+    }
+
+    @Override
+    public void accept(ObjectFileSource objectFileSource) {
+        resources = objectFileSource.resource();
+        targetType = (Class<T>) objectFileSource.targetType();
     }
 
     private InputStream openInputStream(ExtensionContext context, String resource) {
@@ -50,12 +49,16 @@ public class FileArgumentProvider implements AnnotationConsumer<FileSource>, Arg
         );
     }
 
-    private byte[] mapToByteArray(InputStream inputStream) {
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
-            return ByteStreams.toByteArray(bufferedInputStream);
-        } catch (IOException e) {
-            throw new InputStreamException("Cannot read data", e);
-        }
-    }
+    private T mapToTargetType(InputStream inputStream) {
+        try (ObjectInputStream bufferedInputStream = new ObjectInputStream(inputStream)) {
+            Object object = bufferedInputStream.readObject();
+            if (targetType.isInstance(object))
+                return targetType.cast(object);
 
+        } catch (IOException | ClassNotFoundException e) {
+            throw new InputStreamException("Cannot read data", e);
+
+        }
+        return null;
+    }
 }

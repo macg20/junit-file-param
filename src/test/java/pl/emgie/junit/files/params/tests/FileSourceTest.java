@@ -1,9 +1,8 @@
-package pl.emgie.junit.files.param.tests;
+package pl.emgie.junit.files.params.tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import pl.emgie.junit.files.param.FileSource;
+import pl.emgie.junit.files.params.FileSource;
 
 public class FileSourceTest {
 
