@@ -49,8 +49,7 @@ public class TextArgumentProvider implements AnnotationConsumer<TextFileSource>,
     }
 
     private String mapToString(InputStream inputStream) {
-        String result = new BufferedReader(new InputStreamReader(inputStream))
+        return new BufferedReader(new InputStreamReader(inputStream))
                 .lines().collect(Collectors.joining(System.getProperty("line.separator")));
-        return result;
     }
 }

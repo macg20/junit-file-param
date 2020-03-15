@@ -38,7 +38,7 @@ public class FileArgumentProvider implements AnnotationConsumer<FileSource>, Arg
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
         return Arrays.stream(resources).map(e ->
                 openInputStream(extensionContext, e))
-                .map(this::toByteArray)
+                .map(this::mapToByteArray)
                 .map(Arguments::of);
     }
 
@@ -50,7 +50,7 @@ public class FileArgumentProvider implements AnnotationConsumer<FileSource>, Arg
         );
     }
 
-    private byte[] toByteArray(InputStream inputStream) {
+    private byte[] mapToByteArray(InputStream inputStream) {
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
             return ByteStreams.toByteArray(bufferedInputStream);
         } catch (IOException e) {

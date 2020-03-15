@@ -16,7 +16,7 @@ public class ObjectArgumentProvider<T> implements AnnotationConsumer<ObjectFileS
 
     private final BiFunction<Class<?>, String, InputStream> inputStreamProvider;
 
-    private String resource;
+    private String[] resources;
     private Class<T> targetType;
 
     ObjectArgumentProvider() {
@@ -29,15 +29,15 @@ public class ObjectArgumentProvider<T> implements AnnotationConsumer<ObjectFileS
 
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
-        return Stream.of(resource)
+        return Stream.of(resources)
                 .map(e -> openInputStream(extensionContext, e))
-                .map(e -> toObject(e))
+                .map(this::mapToTargetType)
                 .map(Arguments::of);
     }
 
     @Override
     public void accept(ObjectFileSource objectFileSource) {
-        resource = objectFileSource.resource();
+        resources = objectFileSource.resource();
         targetType = (Class<T>) objectFileSource.targetType();
     }
 
@@ -49,7 +49,7 @@ public class ObjectArgumentProvider<T> implements AnnotationConsumer<ObjectFileS
         );
     }
 
-    private T toObject(InputStream inputStream) {
+    private T mapToTargetType(InputStream inputStream) {
         try (ObjectInputStream bufferedInputStream = new ObjectInputStream(inputStream)) {
             Object object = bufferedInputStream.readObject();
             if (targetType.isInstance(object))

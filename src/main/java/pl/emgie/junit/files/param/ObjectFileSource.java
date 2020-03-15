@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @ArgumentsSource(ObjectArgumentProvider.class)
 public @interface ObjectFileSource {
 
-    @NotNull String resource();
+    @NotNull String[] resource();
 
     @NotNull Class<?> targetType();
 }
